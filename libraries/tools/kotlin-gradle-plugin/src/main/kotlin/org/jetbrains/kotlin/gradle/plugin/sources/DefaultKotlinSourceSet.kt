@@ -180,7 +180,7 @@ class DefaultKotlinSourceSet(
                     val filesBySourceSet = resolution.getMetadataFilesBySourceSet(
                         baseDir,
                         doProcessFiles = true
-                    )
+                    ).filter { it.value.any { it.exists() } }
 
                     MetadataDependencyTransformation(
                         group, name, projectPath,
