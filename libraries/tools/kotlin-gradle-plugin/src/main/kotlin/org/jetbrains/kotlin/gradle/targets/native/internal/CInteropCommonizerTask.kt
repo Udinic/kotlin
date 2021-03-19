@@ -169,7 +169,8 @@ private fun CInteropProcess.toGist(): CInteropGist {
     return CInteropGist(
         identifier = settings.identifier,
         konanTarget = konanTarget,
-        sourceSets = project.provider { settings.compilation.kotlinSourceSetsIncludingDefault },
+        // FIXME support cinterop with PM20
+        sourceSets = project.provider { (settings.compilation as? KotlinCompilation<*>)?.kotlinSourceSetsIncludingDefault },
         libraryFile = outputFileProvider,
         dependencies = project.fileProvider { settings.dependencyFiles }.filter(File::isValidDependency)
     )

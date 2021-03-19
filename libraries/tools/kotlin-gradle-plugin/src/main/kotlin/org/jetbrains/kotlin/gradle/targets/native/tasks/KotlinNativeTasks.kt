@@ -27,6 +27,9 @@ import org.jetbrains.kotlin.gradle.internal.ensureParentDirsCreated
 import org.jetbrains.kotlin.gradle.plugin.LanguageSettingsBuilder
 import org.jetbrains.kotlin.gradle.plugin.cocoapods.asValidFrameworkName
 import org.jetbrains.kotlin.gradle.plugin.mpp.*
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.KotlinNativeCompilationData
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.KotlinNativeFragmentMetadataCompilationData
+import org.jetbrains.kotlin.gradle.plugin.mpp.pm20.isMainCompilationData
 import org.jetbrains.kotlin.gradle.plugin.sources.DefaultLanguageSettingsBuilder
 import org.jetbrains.kotlin.gradle.targets.native.internal.isAllowCommonizer
 import org.jetbrains.kotlin.gradle.utils.getValue
@@ -115,13 +118,13 @@ private fun Collection<File>.filterKlibsPassedToCompiler(project: Project) = fil
 }
 
 // endregion
-abstract class AbstractKotlinNativeCompile<T : KotlinCommonToolOptions, K : AbstractKotlinNativeCompilation> : AbstractCompile() {
+abstract class AbstractKotlinNativeCompile<T : KotlinCommonToolOptions, K : KotlinNativeCompilationData<*>> : AbstractCompile() {
     @get:Internal
     abstract val compilation: Provider<K>
 
     @get:Internal
     internal val compilationIsShared by lazy {
-        compilation.get() is KotlinSharedNativeCompilation
+        compilation.get() is KotlinNativeFragmentMetadataCompilationData
     }
 
     // region inputs/outputs
@@ -181,7 +184,7 @@ abstract class AbstractKotlinNativeCompile<T : KotlinCommonToolOptions, K : Abst
 
     @get:Internal
     val languageSettings: LanguageSettingsBuilder by lazy {
-        compilation.get().defaultSourceSet.languageSettings
+        compilation.get().languageSettings
     }
 
     @get:Input
@@ -237,7 +240,7 @@ abstract class AbstractKotlinNativeCompile<T : KotlinCommonToolOptions, K : Abst
 
     @get:Internal
     internal val languageSettingsBuilder by lazy {
-        compilation.get().defaultSourceSet.languageSettings
+        compilation.get().languageSettings
     }
 
     // Args used by both the compiler and IDEA.
@@ -342,11 +345,11 @@ abstract class AbstractKotlinNativeCompile<T : KotlinCommonToolOptions, K : Abst
  * A task producing a klibrary from a compilation.
  */
 @CacheableTask
-open class KotlinNativeCompile : AbstractKotlinNativeCompile<KotlinCommonOptions, AbstractKotlinNativeCompilation>(),
+open class KotlinNativeCompile : AbstractKotlinNativeCompile<KotlinCommonOptions, KotlinNativeCompilationData<*>>(),
     KotlinCompile<KotlinCommonOptions> {
     @Internal
     @Transient // can't be serialized for Gradle configuration avoidance
-    final override val compilation: Property<AbstractKotlinNativeCompilation> =
+    final override val compilation: Property<KotlinNativeCompilationData<*>> =
         project.newProperty()
 
     @get:Input
@@ -360,7 +363,7 @@ open class KotlinNativeCompile : AbstractKotlinNativeCompile<KotlinCommonOptions
 
     @get:Internal
     override val baseName: String by
-    compilation.map { if (it.isMain()) project.name else "${project.name}_${it.name}" }
+    compilation.map { if (it.isMainCompilationData()) project.name else "${project.name}_${it.compilationPurpose}" }
 
     // Store as an explicit provider in order to allow Gradle Instant Execution to capture the state
 //    private val allSourceProvider = compilation.map { project.files(it.allSources).asFileTree }
@@ -393,10 +396,7 @@ open class KotlinNativeCompile : AbstractKotlinNativeCompile<KotlinCommonOptions
 
 
     private val friendModule: FileCollection by compilation.map { compilationInstance ->
-        project.files(
-            compilationInstance.associateWithTransitiveClosure.map { it.output.allOutputs },
-            compilationInstance.friendArtifacts
-        )
+        project.files(compilationInstance.friendPaths)
     }
     // endregion.
 
@@ -936,7 +936,7 @@ open class CInteropProcess @Inject constructor(@get:Internal val settings: Defau
     val baseKlibName: String
         @Internal get() {
             val compilationPrefix = settings.compilation.let {
-                if (it.isMain()) project.name else it.name
+                if (it.isMainCompilationData()) project.name else it.compilationPurpose
             }
             return "$compilationPrefix-cinterop-$interopName"
         }
