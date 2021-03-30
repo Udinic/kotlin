@@ -217,6 +217,7 @@ fun Candidate.resolvePlainExpressionArgument(
     isDispatch: Boolean,
     useNullableArgumentType: Boolean = false
 ) {
+
     if (expectedType == null) return
     val argumentType = argument.typeRef.coneTypeSafe<ConeKotlinType>() ?: return
     resolvePlainArgumentType(
@@ -349,6 +350,8 @@ private fun checkApplicabilityForArgumentType(
                 return UnstableSmartCast.ResolutionError(argument, unstableType)
             }
         }
+
+        /* TODO: actually it does not affect diagnostics
         if (argumentType.isMarkedNullable) {
             if (csBuilder.addSubtypeConstraintIfCompatible(argumentType, actualExpectedType, position)) return null
             if (csBuilder.addSubtypeConstraintIfCompatible(
@@ -357,10 +360,9 @@ private fun checkApplicabilityForArgumentType(
                     position
                 )
             ) return ArgumentTypeMismatch(actualExpectedType, argumentType, argument)
-        }
+        }*/
 
-        csBuilder.addSubtypeConstraint(argumentType, actualExpectedType, position)
-        return null
+        return ArgumentTypeMismatch(actualExpectedType, argumentType, argument)
     }
 
 
