@@ -49,7 +49,7 @@ import org.jetbrains.kotlin.psi.KtWhenExpression
 import org.jetbrains.kotlin.resolve.ForbiddenNamedArgumentsTarget
 
 /*
- * This file was generated automaticallyabstract class ArgumentTypeMismatch : KtFirDiagnos
+ * This file was generated automatically
  * DO NOT MODIFY IT MANUALLY
  */
 
