@@ -53,6 +53,8 @@ enum class PositioningStrategy(private val strategy: String? = null) {
     ARRAY_ACCESS,
     NAME_OF_NAMED_ARGUMENT,
     VALUE_ARGUMENTS,
+    RETURN_KEYWORD,
+
     ;
 
     val expressionToCreate get() = "SourceElementPositioningStrategies.${strategy ?: name}"
