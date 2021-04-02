@@ -32,12 +32,12 @@ object JUnitAsserter : Asserter {
         Assert.assertEquals(message, expected, actual)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double) {
         Assert.assertEquals(message, expected, actual, absoluteTolerance)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float) {
         Assert.assertEquals(message, expected, actual, absoluteTolerance)
     }
@@ -46,12 +46,12 @@ object JUnitAsserter : Asserter {
         Assert.assertNotEquals(message, illegal, actual)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertNotEquals(message: String?, illegal: Double, actual: Double, absoluteTolerance: Double) {
         Assert.assertNotEquals(message, illegal, actual, absoluteTolerance)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertNotEquals(message: String?, illegal: Float, actual: Float, absoluteTolerance: Float) {
         Assert.assertNotEquals(message, illegal, actual, absoluteTolerance)
     }

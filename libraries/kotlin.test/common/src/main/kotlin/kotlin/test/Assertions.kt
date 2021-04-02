@@ -65,13 +65,13 @@ fun <@OnlyInputTypes T> assertEquals(expected: T, actual: T, message: String? = 
 }
 
 /** Asserts that the difference between the [actual] and the [expected] is within an [absoluteTolerance], with an optional [message]. */
-@SinceKotlin("1.4")
+@SinceKotlin("1.5")
 fun assertEquals(expected: Double, actual: Double, absoluteTolerance: Double, message: String? = null) {
     asserter.assertEquals(message, expected, actual, absoluteTolerance)
 }
 
 /** Asserts that the difference between the [actual] and the [expected] is within an [absoluteTolerance], with an optional [message]. */
-@SinceKotlin("1.4")
+@SinceKotlin("1.5")
 fun assertEquals(expected: Float, actual: Float, absoluteTolerance: Float, message: String? = null) {
     asserter.assertEquals(message, expected, actual, absoluteTolerance)
 }
@@ -82,13 +82,13 @@ fun <@OnlyInputTypes T> assertNotEquals(illegal: T, actual: T, message: String? 
 }
 
 /** Asserts that the difference between the [actual] and the [illegal] is not within an [absoluteTolerance], with an optional [message]. */
-@SinceKotlin("1.4")
+@SinceKotlin("1.5")
 fun assertNotEquals(illegal: Double, actual: Double, absoluteTolerance: Double, message: String? = null) {
     asserter.assertNotEquals(message, illegal, actual, absoluteTolerance)
 }
 
 /** Asserts that the difference between the [actual] and the [illegal] is not within an [absoluteTolerance], with an optional [message]. */
-@SinceKotlin("1.4")
+@SinceKotlin("1.5")
 fun assertNotEquals(illegal: Float, actual: Float, absoluteTolerance: Float, message: String? = null) {
     asserter.assertNotEquals(message, illegal, actual, absoluteTolerance)
 }
@@ -476,7 +476,7 @@ interface Asserter {
      *
      * @param message the message to report if the assertion fails.
      */
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double): Unit {
         assertTrue(
             { messagePrefix(message) + "Expected <$expected> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
@@ -489,7 +489,7 @@ interface Asserter {
      *
      * @param message the message to report if the assertion fails.
      */
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float): Unit {
         assertTrue(
             { messagePrefix(message) + "Expected <$expected> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
@@ -511,7 +511,7 @@ interface Asserter {
      *
      * @param message the message to report if the assertion fails.
      */
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     fun assertNotEquals(message: String?, illegal: Double, actual: Double, absoluteTolerance: Double): Unit {
         assertTrue(
             { messagePrefix(message) + "Illegal value <$illegal> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
@@ -524,7 +524,7 @@ interface Asserter {
      *
      * @param message the message to report if the assertion fails.
      */
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     fun assertNotEquals(message: String?, illegal: Float, actual: Float, absoluteTolerance: Float): Unit {
         assertTrue(
             { messagePrefix(message) + "Illegal value <$illegal> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },

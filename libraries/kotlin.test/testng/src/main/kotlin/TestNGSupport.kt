@@ -32,12 +32,12 @@ object TestNGAsserter : Asserter {
         Assert.assertEquals(actual, expected, message)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double) {
         Assert.assertEquals(actual, expected, absoluteTolerance, message)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float) {
         Assert.assertEquals(actual, expected, absoluteTolerance, message)
     }
@@ -46,12 +46,12 @@ object TestNGAsserter : Asserter {
         Assert.assertNotEquals(actual, illegal, message)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertNotEquals(message: String?, illegal: Double, actual: Double, absoluteTolerance: Double) {
         Assert.assertNotEquals(actual, illegal, absoluteTolerance, message)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertNotEquals(message: String?, illegal: Float, actual: Float, absoluteTolerance: Float) {
         Assert.assertNotEquals(actual, illegal, absoluteTolerance, message)
     }

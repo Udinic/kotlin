@@ -32,12 +32,12 @@ object JUnit5Asserter : Asserter {
         Assertions.assertEquals(expected, actual, message)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double) {
         Assertions.assertEquals(expected, actual, absoluteTolerance, message)
     }
 
-    @SinceKotlin("1.4")
+    @SinceKotlin("1.5")
     override fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float) {
         Assertions.assertEquals(expected, actual, absoluteTolerance, message)
     }
