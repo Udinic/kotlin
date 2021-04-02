@@ -33,13 +33,13 @@ object TestNGAsserter : Asserter {
     }
 
     @SinceKotlin("1.4")
-    override fun assertEquals(message: String?, expected: Double, actual: Double, delta: Double) {
-        Assert.assertEquals(actual, expected, delta, message)
+    override fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double) {
+        Assert.assertEquals(actual, expected, absoluteTolerance, message)
     }
 
     @SinceKotlin("1.4")
-    override fun assertEquals(message: String?, expected: Float, actual: Float, delta: Float) {
-        Assert.assertEquals(actual, expected, delta, message)
+    override fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float) {
+        Assert.assertEquals(actual, expected, absoluteTolerance, message)
     }
 
     override fun assertNotEquals(message: String?, illegal: Any?, actual: Any?) {
@@ -47,13 +47,13 @@ object TestNGAsserter : Asserter {
     }
 
     @SinceKotlin("1.4")
-    override fun assertNotEquals(message: String?, illegal: Double, actual: Double, delta: Double) {
-        Assert.assertNotEquals(actual, illegal, delta, message)
+    override fun assertNotEquals(message: String?, illegal: Double, actual: Double, absoluteTolerance: Double) {
+        Assert.assertNotEquals(actual, illegal, absoluteTolerance, message)
     }
 
     @SinceKotlin("1.4")
-    override fun assertNotEquals(message: String?, illegal: Float, actual: Float, delta: Float) {
-        Assert.assertNotEquals(actual, illegal, delta, message)
+    override fun assertNotEquals(message: String?, illegal: Float, actual: Float, absoluteTolerance: Float) {
+        Assert.assertNotEquals(actual, illegal, absoluteTolerance, message)
     }
 
     override fun assertSame(message: String?, expected: Any?, actual: Any?) {

@@ -64,16 +64,16 @@ fun <@OnlyInputTypes T> assertEquals(expected: T, actual: T, message: String? = 
     asserter.assertEquals(message, expected, actual)
 }
 
-/** Asserts that [actual] is within a [delta] value of the [expected] value with an optional [message]. */
+/** Asserts that the difference between the [actual] and the [expected] is within an [absoluteTolerance], with an optional [message]. */
 @SinceKotlin("1.4")
-fun assertEquals(expected: Double, actual: Double, delta: Double, message: String? = null) {
-    asserter.assertEquals(message, expected, actual, delta)
+fun assertEquals(expected: Double, actual: Double, absoluteTolerance: Double, message: String? = null) {
+    asserter.assertEquals(message, expected, actual, absoluteTolerance)
 }
 
-/** Asserts that [actual] is within a [delta] value of the [expected] value with an optional [message]. */
+/** Asserts that the difference between the [actual] and the [expected] is within an [absoluteTolerance], with an optional [message]. */
 @SinceKotlin("1.4")
-fun assertEquals(expected: Float, actual: Float, delta: Float, message: String? = null) {
-    asserter.assertEquals(message, expected, actual, delta)
+fun assertEquals(expected: Float, actual: Float, absoluteTolerance: Float, message: String? = null) {
+    asserter.assertEquals(message, expected, actual, absoluteTolerance)
 }
 
 /** Asserts that the [actual] value is not equal to the illegal value, with an optional [message]. */
@@ -81,16 +81,16 @@ fun <@OnlyInputTypes T> assertNotEquals(illegal: T, actual: T, message: String? 
     asserter.assertNotEquals(message, illegal, actual)
 }
 
-/** Asserts that [actual] is not within a [delta] value of the [illegal] value with an optional [message]. */
+/** Asserts that the difference between the [actual] and the [illegal] is not within an [absoluteTolerance], with an optional [message]. */
 @SinceKotlin("1.4")
-fun assertNotEquals(illegal: Double, actual: Double, delta: Double, message: String? = null) {
-    asserter.assertNotEquals(message, illegal, actual, delta)
+fun assertNotEquals(illegal: Double, actual: Double, absoluteTolerance: Double, message: String? = null) {
+    asserter.assertNotEquals(message, illegal, actual, absoluteTolerance)
 }
 
-/** Asserts that [actual] is not within a [delta] value of the [illegal] value with an optional [message]. */
+/** Asserts that the difference between the [actual] and the [illegal] is not within an [absoluteTolerance], with an optional [message]. */
 @SinceKotlin("1.4")
-fun assertNotEquals(illegal: Float, actual: Float, delta: Float, message: String? = null) {
-    asserter.assertNotEquals(message, illegal, actual, delta)
+fun assertNotEquals(illegal: Float, actual: Float, absoluteTolerance: Float, message: String? = null) {
+    asserter.assertNotEquals(message, illegal, actual, absoluteTolerance)
 }
 
 /** Asserts that [expected] is the same instance as [actual], with an optional [message]. */
@@ -472,23 +472,29 @@ interface Asserter {
     }
 
     /**
-     * Asserts that the specified values are within a delta.
+     * Asserts that the difference between the specified values are within an absolute tolerance.
      *
      * @param message the message to report if the assertion fails.
      */
     @SinceKotlin("1.4")
-    fun assertEquals(message: String?, expected: Double, actual: Double, delta: Double): Unit {
-        assertTrue({ messagePrefix(message) + "Expected value <$expected> with delta <$delta>, actual <$actual>" }, abs(expected - actual) <= delta)
+    fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double): Unit {
+        assertTrue(
+            { messagePrefix(message) + "Expected <$expected> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
+            abs(expected - actual) <= absoluteTolerance
+        )
     }
 
     /**
-     * Asserts that the specified values are within a delta.
+     * Asserts that the difference between the specified values are within an absolute tolerance.
      *
      * @param message the message to report if the assertion fails.
      */
     @SinceKotlin("1.4")
-    fun assertEquals(message: String?, expected: Float, actual: Float, delta: Float): Unit {
-        assertTrue({ messagePrefix(message) + "Expected value <$expected> with delta <$delta>, actual <$actual>" }, abs(expected - actual) <= delta)
+    fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float): Unit {
+        assertTrue(
+            { messagePrefix(message) + "Expected <$expected> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
+            abs(expected - actual) <= absoluteTolerance
+        )
     }
 
     /**
@@ -501,23 +507,29 @@ interface Asserter {
     }
 
     /**
-     * Asserts that the specified values are not within a delta.
+     * Asserts that the difference between the specified values are within an absolute tolerance.
      *
      * @param message the message to report if the assertion fails.
      */
     @SinceKotlin("1.4")
-    fun assertNotEquals(message: String?, illegal: Double, actual: Double, delta: Double): Unit {
-        assertTrue({ messagePrefix(message) + "Illegal value <$illegal> with delta <$delta>, actual <$actual>" }, abs(illegal - actual) > delta)
+    fun assertNotEquals(message: String?, illegal: Double, actual: Double, absoluteTolerance: Double): Unit {
+        assertTrue(
+            { messagePrefix(message) + "Illegal value <$illegal> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
+            abs(illegal - actual) > absoluteTolerance
+        )
     }
 
     /**
-     * Asserts that the specified values are not within a delta.
+     * Asserts that the difference between the specified values are within an absolute tolerance.
      *
      * @param message the message to report if the assertion fails.
      */
     @SinceKotlin("1.4")
-    fun assertNotEquals(message: String?, illegal: Float, actual: Float, delta: Float): Unit {
-        assertTrue({ messagePrefix(message) + "Illegal value <$illegal> with delta <$delta>, actual <$actual>" }, abs(illegal - actual) > delta)
+    fun assertNotEquals(message: String?, illegal: Float, actual: Float, absoluteTolerance: Float): Unit {
+        assertTrue(
+            { messagePrefix(message) + "Illegal value <$illegal> with absolute tolerance <$absoluteTolerance>, actual <$actual>." },
+            abs(illegal - actual) > absoluteTolerance
+        )
     }
 
     /**

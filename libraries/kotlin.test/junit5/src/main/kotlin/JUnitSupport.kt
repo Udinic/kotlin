@@ -33,13 +33,13 @@ object JUnit5Asserter : Asserter {
     }
 
     @SinceKotlin("1.4")
-    override fun assertEquals(message: String?, expected: Double, actual: Double, delta: Double) {
-        Assertions.assertEquals(expected, actual, delta, message)
+    override fun assertEquals(message: String?, expected: Double, actual: Double, absoluteTolerance: Double) {
+        Assertions.assertEquals(expected, actual, absoluteTolerance, message)
     }
 
     @SinceKotlin("1.4")
-    override fun assertEquals(message: String?, expected: Float, actual: Float, delta: Float) {
-        Assertions.assertEquals(expected, actual, delta, message)
+    override fun assertEquals(message: String?, expected: Float, actual: Float, absoluteTolerance: Float) {
+        Assertions.assertEquals(expected, actual, absoluteTolerance, message)
     }
 
     override fun assertNotEquals(message: String?, illegal: Any?, actual: Any?) {
