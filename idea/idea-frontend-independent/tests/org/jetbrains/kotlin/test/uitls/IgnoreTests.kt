@@ -12,7 +12,7 @@ import java.nio.file.Files
 import java.nio.file.Path
 
 object IgnoreTests {
-    private val isTeamCityBuild: Boolean = System.getProperty("TEAMCITY_VERSION") != null
+    private val isTeamCityBuild: Boolean = System.getenv("TEAMCITY_VERSION") != null
     private const val INSERT_DIRECTIVE_AUTOMATICALLY = false // TODO use environment variable instead
     private const val ALWAYS_CONSIDER_TEST_AS_PASSING = false // TODO use environment variable instead
 
