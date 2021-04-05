@@ -38,6 +38,8 @@ import javax.inject.Inject
 open class KaptGenerateStubsTask @Inject constructor(
     objectFactory: ObjectFactory
 ) : KotlinCompile() {
+
+    @field:Transient
     override val sourceRootsContainer = FilteringSourceRootsContainer(objectFactory, { isSourceRootAllowed(it) })
 
     override val kotlinOptions: KotlinJvmOptions = KotlinJvmOptionsImpl()
