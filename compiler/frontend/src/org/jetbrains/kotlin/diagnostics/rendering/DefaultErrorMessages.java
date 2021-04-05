@@ -2,6 +2,10 @@
  * Copyright 2000-2018 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
+/*
+ * Copyright 2000-2018 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
+ */
 
 package org.jetbrains.kotlin.diagnostics.rendering;
 
@@ -476,6 +480,7 @@ public class DefaultErrorMessages {
         MAP.put(USELESS_NULLABLE_CHECK, "Non-null type is checked for instance of nullable type");
         MAP.put(USELESS_IS_CHECK, "Check for instance is always ''{0}''", TO_STRING);
         MAP.put(WRONG_SETTER_PARAMETER_TYPE, "Setter parameter type must be equal to the type of the property, i.e. ''{0}''", RENDER_TYPE, RENDER_TYPE);
+        MAP.put(DELEGATE_USES_EXTENSION_PROPERTY_TYPE_PARAMETER, "Delegate uses extension property type parameter ''{0}''", TO_STRING);
         MAP.put(WRONG_GETTER_RETURN_TYPE, "Getter return type must be equal to the type of the property, i.e. ''{0}''", RENDER_TYPE, RENDER_TYPE);
         MAP.put(WRONG_SETTER_RETURN_TYPE, "Setter return type must be Unit");
         MAP.put(NO_COMPANION_OBJECT, "Classifier ''{0}'' does not have a companion object, and thus must be initialized here", NAME);

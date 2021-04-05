@@ -7126,6 +7126,12 @@ public class DiagnosticTestGenerated extends AbstractDiagnosticTest {
             }
 
             @Test
+            @TestMetadata("useTypeParameterOfExtensionProperty.kt")
+            public void testUseTypeParameterOfExtensionProperty() throws Exception {
+                runTest("compiler/testData/diagnostics/tests/delegatedProperty/useTypeParameterOfExtensionProperty.kt");
+            }
+
+            @Test
             @TestMetadata("wrongCountOfParametersInGet.kt")
             public void testWrongCountOfParametersInGet() throws Exception {
                 runTest("compiler/testData/diagnostics/tests/delegatedProperty/wrongCountOfParametersInGet.kt");

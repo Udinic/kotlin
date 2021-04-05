@@ -712,6 +712,15 @@ class DeclarationsChecker(
                 trace.report(DELEGATED_PROPERTY_IN_INTERFACE.on(delegate))
             } else if (isExpect) {
                 trace.report(EXPECTED_DELEGATED_PROPERTY.on(delegate))
+            } else if (property.receiverTypeReference != null) {
+                val delegatedPropertyResolvedCall = trace.get(DELEGATED_PROPERTY_RESOLVED_CALL, propertyDescriptor.getter)
+                val dispatchReceiverType = delegatedPropertyResolvedCall?.dispatchReceiver?.type
+                val usedParameter = propertyDescriptor.typeParameters.find { typeParameter ->
+                    dispatchReceiverType?.contains { it.constructor == typeParameter.typeConstructor } == true
+                }
+                if (usedParameter != null) {
+                    trace.report(DELEGATE_USES_EXTENSION_PROPERTY_TYPE_PARAMETER.on(delegate, usedParameter.name.asString()))
+                }
             }
         } else {
             val isUninitialized = trace.bindingContext.get(BindingContext.IS_UNINITIALIZED, propertyDescriptor) ?: false
