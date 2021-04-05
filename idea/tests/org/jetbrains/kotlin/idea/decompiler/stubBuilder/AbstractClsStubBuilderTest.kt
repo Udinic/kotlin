@@ -71,6 +71,7 @@ abstract class AbstractClsStubBuilderTest : LightCodeInsightFixtureTestCase() {
 
         val extraOptions = ArrayList<String>()
         extraOptions.add("-Xallow-kotlin-package")
+        extraOptions.add("-Xskip-prerelease-check")
         if (isUseStringTable) {
             extraOptions.add("-Xuse-type-table")
         }
