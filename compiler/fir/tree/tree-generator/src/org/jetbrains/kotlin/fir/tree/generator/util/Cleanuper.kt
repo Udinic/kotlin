@@ -20,11 +20,10 @@ fun removeExtraFilesFromPreviousGeneration(previouslyGeneratedFiles: List<File>,
 
     for (file in previouslyGeneratedFiles) {
         if (file.absolutePath !in generatedFilesPath) {
-            val message = "Deleted: ${file.absolutePath}"
             if (GeneratorsFileUtil.isTeamCityBuild) {
-                GeneratorsFileUtil.assertTeamCityMode("Remove extra file: $message")
+                return GeneratorsFileUtil.assertTeamCityMode("Remove extra file: ${file.absolutePath}")
             }
-            println(message)
+            println("Deleted: ${file.absolutePath}")
             file.delete()
         }
     }
