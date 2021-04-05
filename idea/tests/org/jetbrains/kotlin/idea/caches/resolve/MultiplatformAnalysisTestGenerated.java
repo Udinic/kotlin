@@ -229,6 +229,11 @@ public class MultiplatformAnalysisTestGenerated extends AbstractMultiplatformAna
         runTest("idea/testData/multiplatform/recursiveTypes/");
     }
 
+    @TestMetadata("sealedInheritorsInComplexModuleStructure")
+    public void testSealedInheritorsInComplexModuleStructure() throws Exception {
+        runTest("idea/testData/multiplatform/sealedInheritorsInComplexModuleStructure/");
+    }
+
     @TestMetadata("simple")
     public void testSimple() throws Exception {
         runTest("idea/testData/multiplatform/simple/");
