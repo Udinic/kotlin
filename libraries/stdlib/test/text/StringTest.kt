@@ -1,5 +1,5 @@
 /*
- * Copyright 2010-2020 JetBrains s.r.o. and Kotlin Programming Language contributors.
+ * Copyright 2010-2021 JetBrains s.r.o. and Kotlin Programming Language contributors.
  * Use of this source code is governed by the Apache 2.0 license that can be found in the license/LICENSE.txt file.
  */
 
@@ -915,12 +915,13 @@ class StringTest {
                 assertEquals(expectAllReplaced, chars.replace(c, '_', ignoreCase = true), "$message, ignoreCase")
                 assertEquals(expectOneReplaced, chars.replace(c.toString(), "_"), "$message, as string")
                 assertEquals(expectAllReplaced, chars.replace(c.toString(), "_", ignoreCase = true), "$message, as string, ignoreCase")
+                assertEquals(expectOneReplaced, chars.replace(Regex(Regex.escape(c.toString())), "_"), "$message, as regex")
+                assertEquals(expectAllReplaced, chars.replace(Regex(Regex.escape(c.toString()), RegexOption.IGNORE_CASE), "_"), "$message, as regex, ignoreCase")
             }
         }
 
-        testIgnoreCase("üÜ")
-        testIgnoreCase("öÖ")
-        testIgnoreCase("äÄ")
+        CharTest.equalIgnoreCaseGroups
+            .forEach { testIgnoreCase(it) }
     }
 
     @Test fun replaceFirst() {
