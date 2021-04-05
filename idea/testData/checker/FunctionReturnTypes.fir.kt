@@ -8,7 +8,7 @@ fun unitEmpty() : Unit {}
 fun unitEmptyReturn() : Unit {return}
 fun unitIntReturn() : Unit {return 1}
 fun unitUnitReturn() : Unit {return Unit}
-fun test1() : Any = { return }
+fun test1() : Any = { <error descr="[RETURN_NOT_ALLOWED] 'return' is not allowed here">return</error> }
 fun test2() : Any = a@ {return@a 1}
 fun test3() : Any { return }
 

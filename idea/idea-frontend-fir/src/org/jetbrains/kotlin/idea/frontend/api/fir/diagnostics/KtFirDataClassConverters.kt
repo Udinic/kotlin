@@ -110,12 +110,6 @@ internal val KT_DIAGNOSTIC_CONVERTER = KtDiagnosticConverterBuilder.buildConvert
             token,
         )
     }
-    add(FirErrors.RETURN_NOT_ALLOWED) { firDiagnostic ->
-        ReturnNotAllowedImpl(
-            firDiagnostic as FirPsiDiagnostic<*>,
-            token,
-        )
-    }
     add(FirErrors.DELEGATION_IN_INTERFACE) { firDiagnostic ->
         DelegationInInterfaceImpl(
             firDiagnostic as FirPsiDiagnostic<*>,
@@ -1594,6 +1588,18 @@ internal val KT_DIAGNOSTIC_CONVERTER = KtDiagnosticConverterBuilder.buildConvert
     }
     add(FirErrors.USELESS_CALL_ON_NOT_NULL) { firDiagnostic ->
         UselessCallOnNotNullImpl(
+            firDiagnostic as FirPsiDiagnostic<*>,
+            token,
+        )
+    }
+    add(FirErrors.RETURN_NOT_ALLOWED) { firDiagnostic ->
+        ReturnNotAllowedImpl(
+            firDiagnostic as FirPsiDiagnostic<*>,
+            token,
+        )
+    }
+    add(FirErrors.RETURN_IN_FUNCTION_WITH_EXPRESSION_BODY) { firDiagnostic ->
+        ReturnInFunctionWithExpressionBodyImpl(
             firDiagnostic as FirPsiDiagnostic<*>,
             token,
         )
