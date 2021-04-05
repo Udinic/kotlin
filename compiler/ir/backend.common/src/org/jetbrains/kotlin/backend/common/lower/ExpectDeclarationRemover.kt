@@ -97,13 +97,21 @@ class ExpectDeclarationRemover(val symbolTable: ReferenceSymbolTable, private va
         // the `actual fun` or `actual constructor` for this may be in a different module.
         // Nothing we can do with those.
         // TODO they may not actually have the defaults though -- may be a frontend bug.
-        val expectParameter = function.findExpectForActual()?.valueParameters?.get(index) ?: return
+        val expectFunction = function.findExpectForActual()
+        val expectParameter = expectFunction?.valueParameters?.get(index) ?: return
 
         val defaultValue = expectParameter.defaultValue ?: return
 
+        val typeSubstitute = expectFunction.typeParameters.zip(function.typeParameters).toMap()
+
         defaultValue.let { originalDefault ->
             declaration.defaultValue = declaration.factory.createExpressionBody(originalDefault.startOffset, originalDefault.endOffset) {
-                expression = originalDefault.expression.deepCopyWithSymbols(function).remapExpectValueSymbols()
+                expression = originalDefault.expression
+                    .deepCopyWithSymbols(function)
+                    .remapExpectValueSymbols()
+                    .apply {
+                        remapTypes(IrTypeParameterRemapper(typeSubstitute))
+                    }
             }
         }
     }
