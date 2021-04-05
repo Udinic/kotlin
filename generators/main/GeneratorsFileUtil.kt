@@ -20,7 +20,7 @@ object GeneratorsFileUtil {
     fun writeFileIfContentChanged(file: File, newText: String, logNotChanged: Boolean = true) {
         val parentFile = file.parentFile
         if (!parentFile.exists()) {
-            if (isTeamCityBuild) assertTeamCityMode()
+            if (isTeamCityBuild) assertTeamCityMode("Create dir: ${parentFile.path}")
             if (parentFile.mkdirs()) {
                 println("Directory created: " + parentFile.absolutePath)
             } else {
@@ -33,7 +33,7 @@ object GeneratorsFileUtil {
             }
             return
         }
-        if (isTeamCityBuild) assertTeamCityMode()
+        if (isTeamCityBuild) assertTeamCityMode("Write file: ${file.toPath()}")
         val useTempFile = !SystemInfo.isWindows
         val targetFile = file.toPath()
         val tempFile =
@@ -47,8 +47,8 @@ object GeneratorsFileUtil {
         println()
     }
 
-    fun assertTeamCityMode(): Nothing {
-        throw IllegalStateException("You should commit all newly generated files before pushing them to TeamCity")
+    fun assertTeamCityMode(message: String): Nothing {
+        throw IllegalStateException("You should commit all newly generated files before pushing them to TeamCity\n$message")
     }
 
     fun isFileContentChangedIgnoringLineSeparators(file: File, content: String): Boolean {
