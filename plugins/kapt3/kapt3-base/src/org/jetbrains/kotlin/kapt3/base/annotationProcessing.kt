@@ -33,7 +33,11 @@ fun KaptContext.doAnnotationProcessing(
     processors: List<IncrementalProcessor>,
     additionalSources: JavacList<JCTree.JCCompilationUnit> = JavacList.nil(),
     binaryTypesToReprocess: List<String> = emptyList()
-) {
+): List<String> {
+    var listInstrumentation = mutableListOf<String>()
+
+    val timePrepareJavaSources = System.currentTimeMillis()
+
     val processingEnvironment = JavacProcessingEnvironment.instance(context)
 
     val wrappedProcessors = processors.map { ProcessorWrapper(it) }
@@ -47,14 +51,19 @@ fun KaptContext.doAnnotationProcessing(
         filtered
     }
 
+
+    listInstrumentation.add("ap_prepareJavaSources=${System.currentTimeMillis() - timePrepareJavaSources}")
+
     val compilerAfterAP: JavaCompiler
     try {
         if (javaSourcesToProcess.isEmpty() && binaryTypesToReprocess.isEmpty() && additionalSources.isEmpty()) {
             if (logger.isVerbose) {
                 logger.info("Skipping annotation processing as all sources are up-to-date.")
             }
-            return
+            return listInstrumentation
         }
+
+        var timeInitProcessAnnotations = System.currentTimeMillis()
 
         if (isJava9OrLater()) {
             val initProcessAnnotationsMethod = JavaCompiler::class.java.declaredMethods.single { it.name == "initProcessAnnotations" }
@@ -63,11 +72,15 @@ fun KaptContext.doAnnotationProcessing(
             compiler.initProcessAnnotations(wrappedProcessors)
         }
 
+        listInstrumentation.add("ap_initProcessAnnotations=${System.currentTimeMillis() - timeInitProcessAnnotations}")
+
         if (logger.isVerbose) {
             logger.info("Processing java sources with annotation processors: ${javaSourcesToProcess.joinToString()}")
             logger.info("Processing types with annotation processors: ${binaryTypesToReprocess.joinToString()}")
         }
-        val parsedJavaFiles = parseJavaFiles(javaSourcesToProcess)
+
+        val (timeParseJava, parsedJavaFiles) = measureTimeMillisWithResult { parseJavaFiles(javaSourcesToProcess) }
+        listInstrumentation.add("ap_parseJava=${timeParseJava}")
 
         val sourcesStructureListener = cacheManager?.let {
             if (processors.any { it.isUnableToRunIncrementally() }) return@let null
@@ -79,19 +92,25 @@ fun KaptContext.doAnnotationProcessing(
 
         compilerAfterAP = try {
             javaLog.interceptorData.files = parsedJavaFiles.map { it.sourceFile to it }.toMap()
-            val analyzedFiles = compiler.stopIfErrorOccurred(
-                CompileState.PARSE, compiler.enterTrees(parsedJavaFiles + additionalSources)
-            )
-
-            val additionalClassNames = JavacList.from(binaryTypesToReprocess)
-            if (isJava9OrLater()) {
-                val processAnnotationsMethod =
-                    compiler.javaClass.getMethod("processAnnotations", JavacList::class.java, java.util.Collection::class.java)
-                processAnnotationsMethod.invoke(compiler, analyzedFiles, additionalClassNames)
-                compiler
-            } else {
-                compiler.processAnnotations(analyzedFiles, additionalClassNames)
+            val (timeAnalyze, analyzedFiles) = measureTimeMillisWithResult {
+                compiler.stopIfErrorOccurred(
+                CompileState.PARSE, compiler.enterTrees(parsedJavaFiles + additionalSources))
             }
+            listInstrumentation.add("ap_analyze=${timeAnalyze}")
+
+            val (timeProcessing, compiler_ret) = measureTimeMillisWithResult {
+                val additionalClassNames = JavacList.from(binaryTypesToReprocess)
+                if (isJava9OrLater()) {
+                    val processAnnotationsMethod =
+                        compiler.javaClass.getMethod("processAnnotations", JavacList::class.java, java.util.Collection::class.java)
+                    processAnnotationsMethod.invoke(compiler, analyzedFiles, additionalClassNames)
+                    compiler
+                } else {
+                    compiler.processAnnotations(analyzedFiles, additionalClassNames)
+                }
+            }
+            listInstrumentation.add("ap_processAnnotations=${timeProcessing}")
+            compiler_ret
         } catch (e: AnnotationProcessingError) {
             throw KaptBaseError(KaptBaseError.Kind.EXCEPTION, e.cause ?: e)
         }
@@ -102,6 +121,7 @@ fun KaptContext.doAnnotationProcessing(
         sourcesStructureListener?.let {
             if (logger.isVerbose) {
                 logger.info("Analyzing sources structure took ${it.time}[ms].")
+                listInstrumentation.add("ap_analyzeSrcStruct=${it.time}")
             }
         }
         reportIfRunningNonIncrementally(sourcesStructureListener, cacheManager, logger, processors)
@@ -131,6 +151,7 @@ fun KaptContext.doAnnotationProcessing(
         if (log.nerrors > 0) {
             throw KaptBaseError(KaptBaseError.Kind.ERROR_RAISED)
         }
+        return listInstrumentation
     } finally {
         processingEnvironment.close()
         this@doAnnotationProcessing.close()

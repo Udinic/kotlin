@@ -131,6 +131,18 @@ abstract class AbstractKapt3Extension(
         return false
     }
 
+    object perfStats {
+        var initialAnalysis: Long = 0
+        var annotationProcessing: Long = 0
+        var stubs: Long = 0
+        var totalTime: Long = 0
+        var extraData = mutableListOf<String>()
+
+        override fun toString(): String {
+            return "totalTime: ${totalTime} ms, initialAnalysis: ${initialAnalysis} ms, stubs: ${stubs} ms, annotationProcessing: $annotationProcessing ms $extraData"
+        }
+    }
+
     override val analyzePartially: Boolean
         get() = !annotationProcessingComplete
 
@@ -149,7 +161,19 @@ abstract class AbstractKapt3Extension(
             return AnalysisResult.EMPTY
         }
 
-        return super.doAnalysis(project, module, projectContext, files, bindingTrace, componentProvider)
+        val (timeDoAnalysis, doAnalysis) = measureTimeMillis {
+            super.doAnalysis(
+                project,
+                module,
+                projectContext,
+                files,
+                bindingTrace,
+                componentProvider
+            )
+        }
+        perfStats.extraData.add("doAnalysis=${timeDoAnalysis}")
+
+        return doAnalysis
     }
 
     override fun analysisCompleted(
@@ -163,54 +187,79 @@ abstract class AbstractKapt3Extension(
         fun doNotGenerateCode() = AnalysisResult.success(BindingContext.EMPTY, module, shouldGenerateCode = false)
 
         logger.info { "Initial analysis took ${System.currentTimeMillis() - pluginInitializedTime} ms" }
+        perfStats.initialAnalysis = System.currentTimeMillis() - pluginInitializedTime
 
         val bindingContext = bindingTrace.bindingContext
         if (options.mode.generateStubs) {
             logger.info { "Kotlin files to compile: " + files.map { it.virtualFile?.name ?: "<in memory ${it.hashCode()}>" } }
 
-            contextForStubGeneration(project, module, bindingContext, files.toList()).use { context ->
-                generateKotlinSourceStubs(context)
+            val (stubsTime) = measureTimeMillis {
+                contextForStubGeneration(project, module, bindingContext, files.toList()).use { context ->
+                    generateKotlinSourceStubs(context)
+                }
             }
+            perfStats.stubs = stubsTime
         }
 
         if (!options.mode.runAnnotationProcessing) return doNotGenerateCode()
 
-        val processors = loadProcessors()
-        if (processors.processors.isEmpty()) return if (options.mode != WITH_COMPILATION) doNotGenerateCode() else null
+        val (timeAnnotationProcessing, _) = measureTimeMillis {
+            val (timeLoadProcessing, processors) = measureTimeMillis {
+                loadProcessors()
+            }
+            perfStats.extraData.add("loadProcessors=${timeLoadProcessing}")
 
-        val kaptContext = KaptContext(options, false, logger)
+            if (processors.processors.isEmpty()) return if (options.mode != WITH_COMPILATION) doNotGenerateCode() else null
 
-        fun handleKaptError(error: KaptError): AnalysisResult {
-            val cause = error.cause
+            val (timeKaptContext, kaptContext) = measureTimeMillis { KaptContext(options, false, logger) }
+            perfStats.extraData.add("timeKaptContext=${timeKaptContext}")
 
-            if (cause != null) {
-                kaptContext.logger.exception(cause)
+            fun handleKaptError(error: KaptError): AnalysisResult {
+                val cause = error.cause
+
+                if (cause != null) {
+                    kaptContext.logger.exception(cause)
+                }
+
+                return AnalysisResult.compilationError(bindingTrace.bindingContext)
             }
 
-            return AnalysisResult.compilationError(bindingTrace.bindingContext)
-        }
+            try {
+                runAnnotationProcessing(kaptContext, processors)
+            } catch (error: KaptBaseError) {
+                val kind = when (error.kind) {
+                    KaptBaseError.Kind.EXCEPTION -> KaptError.Kind.EXCEPTION
+                    KaptBaseError.Kind.ERROR_RAISED -> KaptError.Kind.ERROR_RAISED
+                }
 
-        try {
-            runAnnotationProcessing(kaptContext, processors)
-        } catch (error: KaptBaseError) {
-            val kind = when (error.kind) {
-                KaptBaseError.Kind.EXCEPTION -> KaptError.Kind.EXCEPTION
-                KaptBaseError.Kind.ERROR_RAISED -> KaptError.Kind.ERROR_RAISED
+                val cause = error.cause
+                return handleKaptError(if (cause != null) KaptError(kind, cause) else KaptError(kind))
+            } catch (error: KaptError) {
+                return handleKaptError(error)
+            } catch (thr: Throwable) {
+                return AnalysisResult.internalError(bindingTrace.bindingContext, thr)
+            } finally {
+                val (timeCloseContext, _) = measureTimeMillis {
+                    kaptContext.close()
+                }
+                perfStats.extraData.add("timeCloseContext=${timeCloseContext}")
+
             }
-
-            val cause = error.cause
-            return handleKaptError(if (cause != null) KaptError(kind, cause) else KaptError(kind))
-        } catch (error: KaptError) {
-            return handleKaptError(error)
-        } catch (thr: Throwable) {
-            return AnalysisResult.internalError(bindingTrace.bindingContext, thr)
-        } finally {
-            kaptContext.close()
         }
+        logger.info { "Annotation processing took $timeAnnotationProcessing ms" }
+        perfStats.annotationProcessing = timeAnnotationProcessing
 
         return if (options.mode != WITH_COMPILATION) {
             doNotGenerateCode()
         } else {
+            val totalTime = System.currentTimeMillis() - pluginInitializedTime
+            if (perfStats.totalTime != 0L) {
+                perfStats.extraData.add("totalTimeChanged[${perfStats.totalTime}]->[${totalTime}]")
+            }
+            perfStats.totalTime = totalTime
+
+            options.processorsPerfReportFile?.let { options.processorsPerfReportFile!!.appendText("General: ${perfStats}") }
+
             AnalysisResult.RetryWithAdditionalRoots(
                 bindingTrace.bindingContext,
                 module,
@@ -227,11 +276,8 @@ abstract class AbstractKapt3Extension(
         val javaSourceFiles = options.collectJavaSourceFiles(kaptContext.sourcesToReprocess)
         logger.info { "Java source files: " + javaSourceFiles.joinToString { it.canonicalPath } }
 
-        val (annotationProcessingTime) = measureTimeMillis {
-            kaptContext.doAnnotationProcessing(javaSourceFiles, processors.processors)
-        }
-
-        logger.info { "Annotation processing took $annotationProcessingTime ms" }
+        val listInstrumentation = kaptContext.doAnnotationProcessing(javaSourceFiles, processors.processors)
+        perfStats.extraData.addAll(listInstrumentation)
 
         if (options.detectMemoryLeaks != DetectMemoryLeaksMode.NONE) {
             MemoryLeakDetector.add(processors.classLoader)
@@ -283,6 +329,7 @@ abstract class AbstractKapt3Extension(
 
         logger.info { "Stubs compilation took $classFilesCompilationTime ms" }
         logger.info { "Compiled classes: " + compiledClasses.joinToString { it.name } }
+        perfStats.extraData.add("stubsCompilation=${classFilesCompilationTime}")
 
         return KaptContextForStubGeneration(
             options, false, logger, project, bindingContext,
@@ -299,8 +346,11 @@ abstract class AbstractKapt3Extension(
 
         logger.info { "Java stub generation took $stubGenerationTime ms" }
         logger.info { "Stubs for Kotlin classes: " + kaptStubs.joinToString { it.file.sourcefile.name } }
+        perfStats.extraData.add("javaStubGen=${stubGenerationTime}")
 
-        saveStubs(kaptContext, kaptStubs)
+        val (savingStubsTime) = measureTimeMillis { saveStubs(kaptContext, kaptStubs) }
+        perfStats.extraData.add("savingStubs=${savingStubsTime}")
+
         saveIncrementalData(kaptContext, logger.messageCollector, converter)
     }
 
